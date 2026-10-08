@@ -72,6 +72,7 @@ import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
 import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.RenphoMSC01Handler
 import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
@@ -127,9 +128,9 @@ class ScaleFactory @Inject constructor(
          * Builds the list of modern Kotlin-based device handlers.
          *
          * Order matters: [createCommunicator] returns the FIRST handler whose [ScaleDeviceHandler.supportFor]
-         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
-         * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
-         * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
+         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler, DrTrustSSW532Handler
+         * and RenphoMSC01Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which MGBHandler
+         * matches on its own, so a later position would let MGB wrongly claim them.
          *
          * Exposed so the registry (order, device claims, duplicates) can be asserted in unit tests
          * without building the Hilt graph — see `ScaleFactoryTest`.
@@ -178,6 +179,7 @@ class ScaleFactory @Inject constructor(
             FitTrackDaraHandler(),
             DrTrustSSW532Handler(),
             AAAxHandler(),
+            RenphoMSC01Handler(),
             MGBHandler(),
             MedisanaBs44xHandler(),
             InlifeHandler(),

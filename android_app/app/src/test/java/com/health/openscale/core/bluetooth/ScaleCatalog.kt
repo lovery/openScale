@@ -68,6 +68,7 @@ import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.RenphoMSC01Handler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
@@ -265,6 +266,7 @@ object ScaleCatalog {
         device("SSW532", SERVICE_FFB0) claimedBy DrTrustSSW532Handler::class.java,
         device("MY_SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("MY_SCALE", SERVICE_FFB0, uuid16(0x1530)) claimedBy RunstarR6Handler::class.java,
+        device("R-MSC01", SERVICE_FFB0) claimedBy RenphoMSC01Handler::class.java,
         device("swan", SERVICE_FFB0) claimedBy MGBHandler::class.java,
         device("0203B1234") claimedBy MedisanaBs44xHandler::class.java,
         device("0131971234") claimedBy MedisanaBs44xHandler::class.java,
