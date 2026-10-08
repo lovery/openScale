@@ -38,6 +38,9 @@ package com.health.openscale.core.bluetooth.libs
  * chain does. Both matter: `round1(26.35)` is 26.4 where a half-to-even
  * rounding gives 26.3, and 1.95 has a float32 fraction of exactly 0.95, so the
  * half-up test fails and the answer is 1.9 rather than 2.0.
+ *
+ * `WLA37` body composition algorithm by the Fitdays/icomon differs from `WLA25`
+ * only in the fat mass calculation and `Wla37BodyComposition.kt` is re-using.
  */
 object Wla25BodyComposition {
 
@@ -158,7 +161,14 @@ object Wla25BodyComposition {
 
         val weight = round1(rawWeightKg)
         val fat = fatMass(heightCm, weight, imps)
-        val percent = (fat / weight * 100.0).coerceIn(BFR_MIN, BFR_MAX)
+        return fromFatMass(heightCm, weight, fat)
+    }
+
+    /**
+     * Every field is based on the height [heightCm], weight [weight] and fat mass [fatKg]
+     */
+    fun fromFatMass(heightCm: Int, weight: Double, fatKg: Double): Result {
+        val percent = (fatKg / weight * 100.0).coerceIn(BFR_MIN, BFR_MAX)
 
         // The clamp bounds the percentage, so recover the fat mass it implies.
         val roundedFat = round1(percent / 100.0 * weight)
