@@ -157,4 +157,51 @@ class Wla37BodyCompositionTest {
         assertThat(ok(imps = z.copyOf().also { it[8] = 99.0 })).isFalse()
         assertThat(ok(imps = z.copyOf().also { it[0] = 0.0 })).isFalse()
     }
+
+    @Test
+    fun segments_matchTheMorphoScanApp_forEachSexAndAge() {
+        // The 2026-10-21 reports as a woman of 31, a man of 31, a woman of 47 and a man of 50.
+        // Each row: fat kg, fat %, muscle kg, muscle % for left arm, right arm, trunk, left leg, right leg.
+        val profiles = listOf(31 to false, 31 to true, 47 to false, 50 to true)
+        val app = listOf(
+            listOf(
+                listOf(1.1, 106.0, 1.9, 96.7), listOf(1.1, 107.6, 1.9, 97.1), listOf(8.0, 148.3, 17.9, 99.6),
+                listOf(2.6, 107.6, 6.6, 105.8), listOf(2.6, 107.4, 6.6, 105.7),
+            ),
+            listOf(
+                listOf(1.1, 183.7, 1.9, 70.7), listOf(1.1, 186.7, 1.9, 70.9), listOf(7.9, 208.7, 17.8, 83.5),
+                listOf(2.6, 172.5, 6.6, 88.8), listOf(2.6, 172.2, 6.6, 88.8),
+            ),
+            listOf(
+                listOf(1.1, 106.6, 1.9, 96.3), listOf(1.1, 109.9, 1.9, 95.7), listOf(7.9, 147.1, 17.8, 99.0),
+                listOf(2.6, 108.8, 6.6, 105.2), listOf(2.6, 108.3, 6.6, 105.1),
+            ),
+            listOf(
+                listOf(1.1, 183.0, 1.9, 70.7), listOf(1.1, 187.3, 1.9, 70.5), listOf(8.1, 211.4, 17.9, 83.7),
+                listOf(2.6, 172.0, 6.6, 89.1), listOf(2.6, 171.2, 6.6, 89.0),
+            ),
+        )
+        for (i in profiles.indices) {
+            val (age, male) = profiles[i]
+            val r = reports[13 + i]
+            val s = Wla37BodyComposition.segments(r.heightCm, r.weightKg, r.z, male, age)!!
+            val actual = listOf(s.leftArm, s.rightArm, s.trunk, s.leftLeg, s.rightLeg).map {
+                listOf(it.fatKg, it.fatPercentOfStandard!!, it.muscleKg, it.musclePercentOfStandard!!)
+                    .map { v -> v.toDouble() }
+            }
+            for (j in actual.indices) {
+                for (k in actual[j].indices) assertThat(actual[j][k]).isWithin(1e-4).of(app[i][j][k])
+            }
+        }
+    }
+
+    @Test
+    fun segments_haveNoPercentagesUnder18_andNoResultOutOfRange() {
+        val r = reports.first()
+        val child = Wla37BodyComposition.segments(r.heightCm, r.weightKg, r.z, male = false, ageYears = 17)!!
+        assertThat(child.trunk.fatKg).isGreaterThan(0f)
+        assertThat(child.trunk.fatPercentOfStandard).isNull()
+        assertThat(child.trunk.musclePercentOfStandard).isNull()
+        assertThat(Wla37BodyComposition.segments(99, r.weightKg, r.z, male = false, ageYears = 30)).isNull()
+    }
 }

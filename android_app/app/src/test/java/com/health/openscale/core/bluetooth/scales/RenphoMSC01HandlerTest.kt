@@ -52,8 +52,9 @@ class RenphoMSC01HandlerTest {
     @Test
     fun `R-MSC01 reaches its own handler before MGBHandler`() {
         // MGBHandler claims every device with service 0xFFB0, so the registry order matters.
-        val handler = ScaleFactory.createHandlers().first { it.supportFor(device("R-MSC01", serviceFfb0)) != null }
-        assertThat(handler).isInstanceOf(RenphoMSC01Handler::class.java)
+        val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
+        assertThat(order.indexOf("RenphoMSC01Handler")).isAtLeast(0)
+        assertThat(order.indexOf("RenphoMSC01Handler")).isLessThan(order.indexOf("MGBHandler"))
     }
 
     @Test

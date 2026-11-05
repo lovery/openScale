@@ -387,7 +387,7 @@ class RenphoMSC01Handler : ScaleDeviceHandler() {
         logI("body composition: $r")
         m[MeasurementType.BODY_FAT] = Percent(r.fat)
         m[MeasurementType.WATER] = Percent(r.water)
-        m[MeasurementType.MUSCLE] = Percent(r.skeletalMuscle)
+        m[MeasurementType.MUSCLE] = Percent(r.musclePercent)
         m[MeasurementType.PROTEIN] = Percent(r.protein)
         m[MeasurementType.BONE] = Kg(r.boneKg)
         m[MeasurementType.LBM] = Kg(r.lbmKg)
@@ -396,7 +396,7 @@ class RenphoMSC01Handler : ScaleDeviceHandler() {
         Wla37BodyComposition.bodyAge(
             age = user.age,
             fatPercent = r.fat.toDouble(),
-            sex = user.gender.isMale(),
+            male = user.gender.isMale(),
         ).takeIf { it in 10..99 }?.let { m[METABOLIC_AGE] = it }
     }
 
