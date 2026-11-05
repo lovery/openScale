@@ -396,7 +396,7 @@ class RenphoMSC01Handler : ScaleDeviceHandler() {
         Wla37BodyComposition.bodyAge(
             age = user.age,
             fatPercent = r.fat.toDouble(),
-            sex = user.gender.isMale(),
+            male = user.gender.isMale(),
         ).takeIf { it in 10..99 }?.let { m[METABOLIC_AGE] = it }
     }
 

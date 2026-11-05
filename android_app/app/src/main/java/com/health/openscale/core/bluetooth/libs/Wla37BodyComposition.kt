@@ -16,6 +16,8 @@
  */
 package com.health.openscale.core.bluetooth.libs
 
+import kotlin.math.abs
+
 /**
  * Body composition as computed by the Fitdays/icomon `WLA37` algorithm, used by the "Morpho Scan"
  * app for the Renpho R-MSC01 scale.
@@ -93,6 +95,138 @@ object Wla37BodyComposition {
     }
 
     private fun parallel(a: Double, b: Double) = a * b / (a + b)
+
+    /**
+     * Fat and muscle of one body segment, in kg and as % of the segment's standard value for
+     * the user's height and sex (what the app's "Segmental fat analysis" and "Muscle balance"
+     * show). The percentages are `null` under 18, where the library takes the standard from a
+     * per-height child BMI table that is not ported.
+     */
+    data class Segment(
+        val fatKg: Float,
+        val fatPercentOfStandard: Float?,
+        val muscleKg: Float,
+        val musclePercentOfStandard: Float?,
+    )
+
+    data class Segments(
+        val leftArm: Segment,
+        val rightArm: Segment,
+        val trunk: Segment,
+        val leftLeg: Segment,
+        val rightLeg: Segment,
+    )
+
+    /**
+     * Segmental fat and muscle, or `null` where [compute] gives no result.
+     *
+     * Each segment is a linear estimate from the body's fat mass (or fat-free mass) and the
+     * segment's own 20 and 100 kHz impedances. Checked against 4 Morpho Scan reports (both sexes,
+     * 31-50 years): all 80 values agree with the app.
+     */
+    fun segments(heightCm: Int, rawWeightKg: Double, imps: DoubleArray, male: Boolean, ageYears: Int): Segments? {
+        if (!isInRange(heightCm, rawWeightKg, imps)) return null
+        val weight = Wla25BodyComposition.round1(rawWeightKg)
+        // The body fat mass as the library rounds it, after the 3..60 % limit.
+        val percent = (fatMass(heightCm, weight, imps) / weight * 100.0).coerceIn(3.0, 60.0)
+        val fat = Wla25BodyComposition.round1(percent / 100.0 * weight)
+        val ffm = weight - fat
+        val h = heightCm.toDouble()
+
+        val trunk20 = imps[0] * 0.826
+        val trunk100 = if (imps[5] <= imps[0]) imps[5] * 0.826 else trunk20 - 3.0
+        val leftArm20 = imps[1]; val rightArm20 = imps[2]; val leftLeg20 = imps[3]; val rightLeg20 = imps[4]
+        val leftArm100 = imps[6]; val rightArm100 = imps[7]; val leftLeg100 = imps[8]; val rightLeg100 = imps[9]
+
+        fun armFat(z20: Double, z100: Double) = 0.007476 * z100 - 0.005752 * z20 + 0.081201 * fat - 0.662152
+        fun legFat(z20: Double, z100: Double) = 0.008645 * z100 - 0.00801 * z20 + 0.135438 * fat + 0.492479
+        fun armMuscle(z20: Double, z100: Double) = 0.002847 * z20 - 0.005857 * z100 + 0.058707 * ffm + 0.561911
+        fun legMuscle(z20: Double, z100: Double) = 0.008157 * z100 - 0.007381 * z20 + 0.176554 * ffm - 0.688932
+
+        val (leftArmFat, rightArmFat) = balanced(
+            armFat(leftArm20, leftArm100), armFat(rightArm20, rightArm100), 0.3,
+            leftArm20, leftArm100, rightArm20, rightArm100,
+        )
+        val (leftLegFat, rightLegFat) = balanced(
+            legFat(leftLeg20, leftLeg100), legFat(rightLeg20, rightLeg100), 0.5,
+            leftLeg20, leftLeg100, rightLeg20, rightLeg100,
+        )
+        val trunkFat = 0.068621 * trunk20 - 0.131612 * trunk100 + 0.552545 * fat + 0.322704
+        val trunkMuscle = 0.005246 * trunk20 - 0.010469 * trunk100 + 0.440922 * ffm - 0.275461
+
+        // A segment below its minimum gets the minimum plus a small impedance-dependent amount.
+        fun left(v: Double, min: Double, z20: Double, z100: Double) = if (v < min) (z20 + z100) / 20113.0 + min else v
+        fun right(v: Double, min: Double, z20: Double, z100: Double) = if (v < min) (z20 + z100) / 20213.0 + min else v
+        fun trunk(v: Double, min: Double) = if (v < min) (trunk20 + trunk100) / 20203.0 + min else v
+
+        // Standard segment values, from the standard weight for the height and sex.
+        val standard = if (ageYears >= 18) Standard(h, weight, male) else null
+
+        fun segment(fatKg: Double, fatStandard: Double?, muscleKg: Double, muscleStandard: Double?) = Segment(
+            fatKg = Wla25BodyComposition.round1(fatKg).toFloat(),
+            fatPercentOfStandard = fatStandard?.let { Wla25BodyComposition.round1(fatKg / it * 100.0).toFloat() },
+            muscleKg = Wla25BodyComposition.round1(muscleKg).toFloat(),
+            musclePercentOfStandard = muscleStandard?.let { Wla25BodyComposition.round1(muscleKg / it * 100.0).toFloat() },
+        )
+
+        return Segments(
+            leftArm = segment(
+                left(leftArmFat, 0.1, leftArm20, leftArm100), standard?.armFat,
+                left(armMuscle(leftArm20, leftArm100), 0.2, leftArm20, leftArm100), standard?.armMuscle,
+            ),
+            rightArm = segment(
+                right(rightArmFat, 0.1, rightArm20, rightArm100), standard?.armFat,
+                right(armMuscle(rightArm20, rightArm100), 0.2, rightArm20, rightArm100), standard?.armMuscle,
+            ),
+            trunk = segment(trunk(trunkFat, 0.1), standard?.trunkFat, trunk(trunkMuscle, 0.7), standard?.trunkMuscle),
+            leftLeg = segment(
+                left(leftLegFat, 0.1, leftLeg20, leftLeg100), standard?.legFat,
+                left(legMuscle(leftLeg20, leftLeg100), 0.2, leftLeg20, leftLeg100), standard?.legMuscle,
+            ),
+            rightLeg = segment(
+                right(rightLegFat, 0.1, rightLeg20, rightLeg100), standard?.legFat,
+                right(legMuscle(rightLeg20, rightLeg100), 0.2, rightLeg20, rightLeg100), standard?.legMuscle,
+            ),
+        )
+    }
+
+    /**
+     * When the left and right estimates differ by more than [maxDifference] kg, the lower side
+     * is set to the higher one, plus or minus (z20 + z100) / 20213 depending on which side has
+     * the lower 20 kHz impedance.
+     */
+    private fun balanced(
+        left: Double, right: Double, maxDifference: Double,
+        left20: Double, left100: Double, right20: Double, right100: Double,
+    ): Pair<Double, Double> {
+        if (abs(right - left) <= maxDifference) return left to right
+        return if (right <= left) {
+            val d = (right20 + right100) / 20213.0
+            left to left + if (right20 <= left20) d else -d
+        } else {
+            val d = (left20 + left100) / 20213.0
+            (right + if (left20 <= right20) d else -d) to right
+        }
+    }
+
+    /**
+     * The adult standard per segment. The standard weight is height² × 22 (men) or 21 (women);
+     * 15 % (men) or 23 % (women) of it is the standard fat mass, 85 % or 77 % the standard
+     * fat-free mass, both rounded to 0.1 kg.
+     */
+    private class Standard(h: Double, weight: Double, male: Boolean) {
+        private val m = (h / 100.0).toFloat()
+        private val weightKg = (m * m * if (male) 22.0f else 21.0f).toDouble()
+        private val fatKg = Wla25BodyComposition.round1((if (male) 0.15 else 0.23) * weightKg)
+        private val ffmKg = Wla25BodyComposition.round1((if (male) 0.85 else 0.77) * weightKg)
+
+        val armFat = 0.101 * fatKg - 0.004 * h + 0.331
+        val legFat = 0.215 * fatKg - 0.005 * h + 0.391
+        val trunkFat = 0.389 * fatKg + 0.006 * h - 0.683
+        val armMuscle = 0.02 * weight + 0.102 * ffmKg - 0.045 * h + 3.752
+        val legMuscle = 0.059 * weight + 0.168 * ffmKg - 0.056 * h + 4.775
+        val trunkMuscle = 0.166 * weight + 0.485 * ffmKg - 0.16 * h + 13.595
+    }
 
     /**
      * Coefficients of the fat mass equation, one per term. Impedances are in ohm, height in cm,
