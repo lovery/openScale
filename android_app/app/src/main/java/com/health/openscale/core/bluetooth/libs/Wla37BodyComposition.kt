@@ -107,6 +107,13 @@ object Wla37BodyComposition {
         val fatPercentOfStandard: Float?,
         val muscleKg: Float,
         val musclePercentOfStandard: Float?,
+        /**
+         * Fat and muscle as % of the segment, taken as fat + muscle: the library has no segment
+         * weight, and its muscle mass includes the water. Not shown by the app; it is what the
+         * Beurer BF1000 reports per segment.
+         */
+        val fatPercentOfSegment: Float,
+        val musclePercentOfSegment: Float,
     )
 
     data class Segments(
@@ -167,6 +174,8 @@ object Wla37BodyComposition {
             fatPercentOfStandard = fatStandard?.let { Wla25BodyComposition.round1(fatKg / it * 100.0).toFloat() },
             muscleKg = Wla25BodyComposition.round1(muscleKg).toFloat(),
             musclePercentOfStandard = muscleStandard?.let { Wla25BodyComposition.round1(muscleKg / it * 100.0).toFloat() },
+            fatPercentOfSegment = Wla25BodyComposition.round1(fatKg / (fatKg + muscleKg) * 100.0).toFloat(),
+            musclePercentOfSegment = Wla25BodyComposition.round1(muscleKg / (fatKg + muscleKg) * 100.0).toFloat(),
         )
 
         return Segments(

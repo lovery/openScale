@@ -17,10 +17,8 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
-import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.Percent
-import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.BeurerBf1000Lib
@@ -276,11 +274,11 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
                 // field rather than a device-specific one.
                 if (decoded.visceralFat > 0f) bf1000PendingVisceralFat = decoded.visceralFat
 
-                bufferSegmental(SEGMENTAL_FAT_LEFT_ARM, decoded.leftArm)
-                bufferSegmental(SEGMENTAL_FAT_RIGHT_ARM, decoded.rightArm)
-                bufferSegmental(SEGMENTAL_FAT_TORSO, decoded.torso)
-                bufferSegmental(SEGMENTAL_FAT_LEFT_LEG, decoded.leftLeg)
-                bufferSegmental(SEGMENTAL_FAT_RIGHT_LEG, decoded.rightLeg)
+                bufferSegmental(SegmentalMeasurementTypes.FAT_LEFT_ARM, decoded.leftArm)
+                bufferSegmental(SegmentalMeasurementTypes.FAT_RIGHT_ARM, decoded.rightArm)
+                bufferSegmental(SegmentalMeasurementTypes.FAT_TORSO, decoded.torso)
+                bufferSegmental(SegmentalMeasurementTypes.FAT_LEFT_LEG, decoded.leftLeg)
+                bufferSegmental(SegmentalMeasurementTypes.FAT_RIGHT_LEG, decoded.rightLeg)
             }
             characteristic == bf1000SegmentalMuscleMeasurement -> {
                 val decoded = BeurerBf1000Lib.parseSegmentalMuscleMeasurement(data)
@@ -295,11 +293,11 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
                         "leftLeg=${decoded.leftLeg}% rightLeg=${decoded.rightLeg}%"
                 )
 
-                bufferSegmental(SEGMENTAL_MUSCLE_LEFT_ARM, decoded.leftArm)
-                bufferSegmental(SEGMENTAL_MUSCLE_RIGHT_ARM, decoded.rightArm)
-                bufferSegmental(SEGMENTAL_MUSCLE_TORSO, decoded.torso)
-                bufferSegmental(SEGMENTAL_MUSCLE_LEFT_LEG, decoded.leftLeg)
-                bufferSegmental(SEGMENTAL_MUSCLE_RIGHT_LEG, decoded.rightLeg)
+                bufferSegmental(SegmentalMeasurementTypes.MUSCLE_LEFT_ARM, decoded.leftArm)
+                bufferSegmental(SegmentalMeasurementTypes.MUSCLE_RIGHT_ARM, decoded.rightArm)
+                bufferSegmental(SegmentalMeasurementTypes.MUSCLE_TORSO, decoded.torso)
+                bufferSegmental(SegmentalMeasurementTypes.MUSCLE_LEFT_LEG, decoded.leftLeg)
+                bufferSegmental(SegmentalMeasurementTypes.MUSCLE_RIGHT_LEG, decoded.rightLeg)
             }
         }
 
@@ -340,33 +338,6 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         bf1000PendingVisceralFat = 0f
 
         return transformed
-    }
-
-    private companion object {
-        // Semantic, vendor-neutral identities: a future scale reporting the same
-        // quantities writes into the same columns, so the user's history survives a scale
-        // change. The icon says *where* on the body, the colour says *what* is measured:
-        // fat segments are shades of the predefined BODY_FAT red, muscle segments shades
-        // of the MUSCLE green, darkening from the arms down to the legs. The anchor shades
-        // themselves stay reserved for the whole-body totals.
-        val SEGMENTAL_FAT_LEFT_ARM   = fat("left_arm",  R.string.measurement_type_segmental_fat_left_arm,   MeasurementTypeIcon.IC_BICEPS, 0xFFE57373)
-        val SEGMENTAL_FAT_RIGHT_ARM  = fat("right_arm", R.string.measurement_type_segmental_fat_right_arm,  MeasurementTypeIcon.IC_BICEPS, 0xFFF44336)
-        val SEGMENTAL_FAT_TORSO      = fat("torso",     R.string.measurement_type_segmental_fat_torso,      MeasurementTypeIcon.IC_CHEST,  0xFFE53935)
-        val SEGMENTAL_FAT_LEFT_LEG   = fat("left_leg",  R.string.measurement_type_segmental_fat_left_leg,   MeasurementTypeIcon.IC_THIGH,  0xFFD32F2F)
-        val SEGMENTAL_FAT_RIGHT_LEG  = fat("right_leg", R.string.measurement_type_segmental_fat_right_leg,  MeasurementTypeIcon.IC_THIGH,  0xFFC62828)
-
-        val SEGMENTAL_MUSCLE_LEFT_ARM  = muscle("left_arm",  R.string.measurement_type_segmental_muscle_left_arm,  MeasurementTypeIcon.IC_BICEPS, 0xFF81C784)
-        val SEGMENTAL_MUSCLE_RIGHT_ARM = muscle("right_arm", R.string.measurement_type_segmental_muscle_right_arm, MeasurementTypeIcon.IC_BICEPS, 0xFF4CAF50)
-        val SEGMENTAL_MUSCLE_TORSO     = muscle("torso",     R.string.measurement_type_segmental_muscle_torso,     MeasurementTypeIcon.IC_CHEST,  0xFF43A047)
-        val SEGMENTAL_MUSCLE_LEFT_LEG  = muscle("left_leg",  R.string.measurement_type_segmental_muscle_left_leg,  MeasurementTypeIcon.IC_THIGH,  0xFF388E3C)
-        val SEGMENTAL_MUSCLE_RIGHT_LEG = muscle("right_leg", R.string.measurement_type_segmental_muscle_right_leg, MeasurementTypeIcon.IC_THIGH,  0xFF2E7D32)
-
-        /** Both packets report tenths of a percent, so every segment is a PERCENT float. */
-        private fun fat(part: String, nameResId: Int, icon: MeasurementTypeIcon, color: Long) =
-            MeasurementType.devicePercent("segmental.fat.$part", nameResId, icon = icon, color = color.toInt())
-
-        private fun muscle(part: String, nameResId: Int, icon: MeasurementTypeIcon, color: Long) =
-            MeasurementType.devicePercent("segmental.muscle.$part", nameResId, icon = icon, color = color.toInt())
     }
 
     private fun handleUserList(data: ByteArray, user : ScaleUser) {

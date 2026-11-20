@@ -398,6 +398,22 @@ class RenphoMSC01Handler : ScaleDeviceHandler() {
             fatPercent = r.fat.toDouble(),
             male = user.gender.isMale(),
         ).takeIf { it in 10..99 }?.let { m[METABOLIC_AGE] = it }
+
+        val s = Wla37BodyComposition.segments(
+            user.bodyHeight.toInt(), weightKg.toDouble(), segments.toWla37Order(), user.gender.isMale(), user.age,
+        ) ?: return
+        logI("segments: $s")
+        // Stored like the Beurer BF1000's segmental values: fat and muscle in % of the segment.
+        m[SegmentalMeasurementTypes.FAT_LEFT_ARM] = Percent(s.leftArm.fatPercentOfSegment)
+        m[SegmentalMeasurementTypes.FAT_RIGHT_ARM] = Percent(s.rightArm.fatPercentOfSegment)
+        m[SegmentalMeasurementTypes.FAT_TORSO] = Percent(s.trunk.fatPercentOfSegment)
+        m[SegmentalMeasurementTypes.FAT_LEFT_LEG] = Percent(s.leftLeg.fatPercentOfSegment)
+        m[SegmentalMeasurementTypes.FAT_RIGHT_LEG] = Percent(s.rightLeg.fatPercentOfSegment)
+        m[SegmentalMeasurementTypes.MUSCLE_LEFT_ARM] = Percent(s.leftArm.musclePercentOfSegment)
+        m[SegmentalMeasurementTypes.MUSCLE_RIGHT_ARM] = Percent(s.rightArm.musclePercentOfSegment)
+        m[SegmentalMeasurementTypes.MUSCLE_TORSO] = Percent(s.trunk.musclePercentOfSegment)
+        m[SegmentalMeasurementTypes.MUSCLE_LEFT_LEG] = Percent(s.leftLeg.musclePercentOfSegment)
+        m[SegmentalMeasurementTypes.MUSCLE_RIGHT_LEG] = Percent(s.rightLeg.musclePercentOfSegment)
     }
 
     private fun finishSession() {
