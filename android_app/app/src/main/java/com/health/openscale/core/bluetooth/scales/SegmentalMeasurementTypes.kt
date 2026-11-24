@@ -22,7 +22,7 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeIcon
 
 /**
- * Segmental body fat and muscle, in % of each segment, shared by every handler that reports
+ * Segmental body fat and muscle, in % of each segment and in kg, shared by every handler that reports
  * them (Beurer BF1000, Renpho R-MSC01).
  *
  * Semantic, vendor-neutral identities: a scale reporting the same quantities writes into the
@@ -43,6 +43,26 @@ internal object SegmentalMeasurementTypes {
     val MUSCLE_TORSO     = muscle("torso",     R.string.measurement_type_segmental_muscle_torso,     MeasurementTypeIcon.IC_CHEST,  0xFF43A047)
     val MUSCLE_LEFT_LEG  = muscle("left_leg",  R.string.measurement_type_segmental_muscle_left_leg,  MeasurementTypeIcon.IC_THIGH,  0xFF388E3C)
     val MUSCLE_RIGHT_LEG = muscle("right_leg", R.string.measurement_type_segmental_muscle_right_leg, MeasurementTypeIcon.IC_THIGH,  0xFF2E7D32)
+
+    // The same segments in kg. Only scales that know the segment masses report these
+    // (Renpho R-MSC01); the % of a segment cannot be turned back into kg without them.
+    val FAT_MASS_LEFT_ARM   = fatMass("left_arm",  R.string.measurement_type_segmental_fat_mass_left_arm,   MeasurementTypeIcon.IC_BICEPS, 0xFFE57373)
+    val FAT_MASS_RIGHT_ARM  = fatMass("right_arm", R.string.measurement_type_segmental_fat_mass_right_arm,  MeasurementTypeIcon.IC_BICEPS, 0xFFF44336)
+    val FAT_MASS_TORSO      = fatMass("torso",     R.string.measurement_type_segmental_fat_mass_torso,      MeasurementTypeIcon.IC_CHEST,  0xFFE53935)
+    val FAT_MASS_LEFT_LEG   = fatMass("left_leg",  R.string.measurement_type_segmental_fat_mass_left_leg,   MeasurementTypeIcon.IC_THIGH,  0xFFD32F2F)
+    val FAT_MASS_RIGHT_LEG  = fatMass("right_leg", R.string.measurement_type_segmental_fat_mass_right_leg,  MeasurementTypeIcon.IC_THIGH,  0xFFC62828)
+
+    val MUSCLE_MASS_LEFT_ARM  = muscleMass("left_arm",  R.string.measurement_type_segmental_muscle_mass_left_arm,  MeasurementTypeIcon.IC_BICEPS, 0xFF81C784)
+    val MUSCLE_MASS_RIGHT_ARM = muscleMass("right_arm", R.string.measurement_type_segmental_muscle_mass_right_arm, MeasurementTypeIcon.IC_BICEPS, 0xFF4CAF50)
+    val MUSCLE_MASS_TORSO     = muscleMass("torso",     R.string.measurement_type_segmental_muscle_mass_torso,     MeasurementTypeIcon.IC_CHEST,  0xFF43A047)
+    val MUSCLE_MASS_LEFT_LEG  = muscleMass("left_leg",  R.string.measurement_type_segmental_muscle_mass_left_leg,  MeasurementTypeIcon.IC_THIGH,  0xFF388E3C)
+    val MUSCLE_MASS_RIGHT_LEG = muscleMass("right_leg", R.string.measurement_type_segmental_muscle_mass_right_leg, MeasurementTypeIcon.IC_THIGH,  0xFF2E7D32)
+
+    private fun fatMass(part: String, nameResId: Int, icon: MeasurementTypeIcon, color: Long) =
+        MeasurementType.deviceKg("segmental.fat_mass.$part", nameResId, icon = icon, color = color.toInt())
+
+    private fun muscleMass(part: String, nameResId: Int, icon: MeasurementTypeIcon, color: Long) =
+        MeasurementType.deviceKg("segmental.muscle_mass.$part", nameResId, icon = icon, color = color.toInt())
 
     private fun fat(part: String, nameResId: Int, icon: MeasurementTypeIcon, color: Long) =
         MeasurementType.devicePercent("segmental.fat.$part", nameResId, icon = icon, color = color.toInt())

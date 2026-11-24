@@ -388,6 +388,7 @@ class RenphoMSC01Handler : ScaleDeviceHandler() {
         m[MeasurementType.BODY_FAT] = Percent(r.fat)
         m[MeasurementType.WATER] = Percent(r.water)
         m[MeasurementType.MUSCLE] = Percent(r.musclePercent)
+        m[MeasurementType.SKELETAL_MUSCLE] = Percent(r.skeletalMuscle)
         m[MeasurementType.PROTEIN] = Percent(r.protein)
         m[MeasurementType.BONE] = Kg(r.boneKg)
         m[MeasurementType.LBM] = Kg(r.lbmKg)
@@ -414,6 +415,17 @@ class RenphoMSC01Handler : ScaleDeviceHandler() {
         m[SegmentalMeasurementTypes.MUSCLE_TORSO] = Percent(s.trunk.musclePercentOfSegment)
         m[SegmentalMeasurementTypes.MUSCLE_LEFT_LEG] = Percent(s.leftLeg.musclePercentOfSegment)
         m[SegmentalMeasurementTypes.MUSCLE_RIGHT_LEG] = Percent(s.rightLeg.musclePercentOfSegment)
+        // And the masses behind them, which the % alone cannot give back.
+        m[SegmentalMeasurementTypes.FAT_MASS_LEFT_ARM] = Kg(s.leftArm.fatKg)
+        m[SegmentalMeasurementTypes.FAT_MASS_RIGHT_ARM] = Kg(s.rightArm.fatKg)
+        m[SegmentalMeasurementTypes.FAT_MASS_TORSO] = Kg(s.trunk.fatKg)
+        m[SegmentalMeasurementTypes.FAT_MASS_LEFT_LEG] = Kg(s.leftLeg.fatKg)
+        m[SegmentalMeasurementTypes.FAT_MASS_RIGHT_LEG] = Kg(s.rightLeg.fatKg)
+        m[SegmentalMeasurementTypes.MUSCLE_MASS_LEFT_ARM] = Kg(s.leftArm.muscleKg)
+        m[SegmentalMeasurementTypes.MUSCLE_MASS_RIGHT_ARM] = Kg(s.rightArm.muscleKg)
+        m[SegmentalMeasurementTypes.MUSCLE_MASS_TORSO] = Kg(s.trunk.muscleKg)
+        m[SegmentalMeasurementTypes.MUSCLE_MASS_LEFT_LEG] = Kg(s.leftLeg.muscleKg)
+        m[SegmentalMeasurementTypes.MUSCLE_MASS_RIGHT_LEG] = Kg(s.rightLeg.muscleKg)
     }
 
     private fun finishSession() {

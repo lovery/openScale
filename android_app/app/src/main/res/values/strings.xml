@@ -164,6 +164,7 @@
     <string name="measurement_type_body_fat">Body Fat</string>
     <string name="measurement_type_water">Water</string>
     <string name="measurement_type_muscle">Muscle</string>
+    <string name="measurement_type_skeletal_muscle">Skeletal Muscle</string>
     <string name="measurement_type_lbm">LBM</string>
     <string name="measurement_type_bone">Bone</string>
     <string name="measurement_type_waist">Waist</string>
@@ -209,6 +210,16 @@
     <string name="measurement_type_segmental_muscle_torso">Muscle (torso)</string>
     <string name="measurement_type_segmental_muscle_left_leg">Muscle (left leg)</string>
     <string name="measurement_type_segmental_muscle_right_leg">Muscle (right leg)</string>
+    <string name="measurement_type_segmental_fat_mass_left_arm">Fat mass (left arm)</string>
+    <string name="measurement_type_segmental_fat_mass_right_arm">Fat mass (right arm)</string>
+    <string name="measurement_type_segmental_fat_mass_torso">Fat mass (torso)</string>
+    <string name="measurement_type_segmental_fat_mass_left_leg">Fat mass (left leg)</string>
+    <string name="measurement_type_segmental_fat_mass_right_leg">Fat mass (right leg)</string>
+    <string name="measurement_type_segmental_muscle_mass_left_arm">Muscle mass (left arm)</string>
+    <string name="measurement_type_segmental_muscle_mass_right_arm">Muscle mass (right arm)</string>
+    <string name="measurement_type_segmental_muscle_mass_torso">Muscle mass (torso)</string>
+    <string name="measurement_type_segmental_muscle_mass_left_leg">Muscle mass (left leg)</string>
+    <string name="measurement_type_segmental_muscle_mass_right_leg">Muscle mass (right leg)</string>
     <string name="s400_bone_formula_label">Bone formula</string>
     <string name="s400_bone_formula_mi_legacy">Impedance-based regression (Legacy)</string>
     <string name="s400_bone_formula_heymsfield">Heymsfield (anthropometric)</string>

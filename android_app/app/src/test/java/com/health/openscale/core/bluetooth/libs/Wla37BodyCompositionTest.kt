@@ -204,4 +204,17 @@ class Wla37BodyCompositionTest {
         assertThat(child.trunk.musclePercentOfStandard).isNull()
         assertThat(Wla37BodyComposition.segments(99, r.weightKg, r.z, male = false, ageYears = 30)).isNull()
     }
+
+    @Test
+    fun segments_percentOfSegment_isFatAndMuscleOfTheirSum() {
+        // The woman of 31 on 2026-10-21, from the unrounded segment masses.
+        val r = reports[13]
+        val s = Wla37BodyComposition.segments(r.heightCm, r.weightKg, r.z, male = false, ageYears = 31)!!
+        val expected = listOf(35.8 to 64.2, 36.1 to 63.9, 30.9 to 69.1, 27.8 to 72.2, 27.8 to 72.2)
+        val actual = listOf(s.leftArm, s.rightArm, s.trunk, s.leftLeg, s.rightLeg)
+        for ((segment, percent) in actual.zip(expected)) {
+            assertThat(segment.fatPercentOfSegment.toDouble()).isWithin(1e-4).of(percent.first)
+            assertThat(segment.musclePercentOfSegment.toDouble()).isWithin(1e-4).of(percent.second)
+        }
+    }
 }

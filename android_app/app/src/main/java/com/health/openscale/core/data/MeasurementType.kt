@@ -198,6 +198,8 @@ data class MeasurementType(
         val WATER: Key<Percent> = builtinFloat("water", R.string.measurement_type_water, COMPOSITION_UNITS, 0xFF29B6F6, MeasurementTypeIcon.IC_WATER, pinned = true)
         /** Muscle mass — raw values arrive as [Percent] of body weight. */
         val MUSCLE: Key<Percent> = builtinFloat("muscle", R.string.measurement_type_muscle, COMPOSITION_UNITS, 0xFF66BB6A, MeasurementTypeIcon.IC_MUSCLE, pinned = true)
+        /** Skeletal Muscle mass — raw values arrive as [Percent] of body weight. */
+        val SKELETAL_MUSCLE: Key<Percent> = builtinFloat("skeletal_muscle", R.string.measurement_type_skeletal_muscle, COMPOSITION_UNITS, 0xFF388E3C, MeasurementTypeIcon.IC_MUSCLE)
         /** Lean body mass — raw values arrive as [Kg]. */
         val LBM: Key<Kg> = builtinFloat("lbm", R.string.measurement_type_lbm, WEIGHT_UNITS, 0xFF4DBAC0, MeasurementTypeIcon.IC_LBM)
         /** Bone mass — raw values arrive as [Kg]. */
